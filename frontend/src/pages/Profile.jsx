@@ -7,6 +7,7 @@ import EditProfile from "../components/EditProfile";
 import Post from "../components/Post";
 import ReportDialog from "../components/ReportDialog";
 import Skeleton from "../components/Skeleton";
+import usePagedPosts from "../usePagedPosts";
 
 export default function Profile() {
   const { username } = useParams();
@@ -14,15 +15,17 @@ export default function Profile() {
   const quien = username ?? user.username;
 
   const [p, setP] = useState(null);
-  const [posts, setPosts] = useState(null);
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState("");
   const [reportando, setReportando] = useState(false);
 
+  const { posts, hayMas, cargandoMas, cargarMas, quitar } = usePagedPosts(
+    `/posts/?author=${quien}`
+  );
+
   useEffect(() => {
-    setP(null); setPosts(null); setEditando(false); setError("");
+    setP(null); setEditando(false); setError("");
     api(`/users/${quien}/`).then(setP).catch((e) => setError(e.message));
-    api(`/posts/?author=${quien}`).then((d) => setPosts(d ?? [])).catch(() => setPosts([]));
   }, [quien]);
 
   async function seguir() {
@@ -59,11 +62,13 @@ export default function Profile() {
               <p className="identity-handle">@{p.username}</p>
             </div>
             {p.is_me ? (
-              <button className="btn-outline" onClick={() => setEditando(true)}>
-                Editar perfil
-              </button>
+              <div className="identity-actions">
+                <button className="btn-outline" onClick={() => setEditando(true)}>
+                  Editar perfil
+                </button>
+              </div>
             ) : (
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="identity-actions">
                 <button
                   className={`btn${p.followed_by_me ? "-outline following" : ""}`}
                   onClick={seguir}
@@ -123,9 +128,16 @@ export default function Profile() {
         </div>
       )}
       {posts?.map((post) => (
-        <Post key={post.id} post={post}
-          onDeleted={(id) => setPosts(posts.filter((x) => x.id !== id))} />
+        <Post key={post.id} post={post} onDeleted={quitar} />
       ))}
+
+      {hayMas && (
+        <div className="load-more">
+          <button className="btn-outline" onClick={cargarMas} disabled={cargandoMas}>
+            {cargandoMas ? "Cargando…" : "Cargar más"}
+          </button>
+        </div>
+      )}
     </>
   );
 }

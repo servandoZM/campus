@@ -24,6 +24,16 @@ class Post(models.Model):
         related_name="posts",
     )
 
+    # Nulo = publicación general de la escuela. Con valor = vive dentro de una
+    # comunidad y solo la ven quienes pueden ver esa comunidad.
+    community = models.ForeignKey(
+        "communities.Community",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="posts",
+    )
+
     content = models.TextField(max_length=500)
 
     # blank=True  -> el admin y los formularios permiten dejarlo vacio

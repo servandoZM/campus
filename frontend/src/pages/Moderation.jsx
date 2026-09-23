@@ -1,7 +1,30 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
+import ConfirmDialog from "../components/ConfirmDialog";
 import Skeleton from "../components/Skeleton";
+
+// Lo que el moderador verá antes de aplicar cada acción.
+const ACCIONES = {
+  delete_post: {
+    titulo: "¿Eliminar esta publicación?",
+    detalle: "Desaparece del feed. El reporte queda registrado.",
+    confirmar: "Eliminar",
+    peligro: true,
+  },
+  disable_user: {
+    titulo: "¿Desactivar esta cuenta?",
+    detalle: "No podrá iniciar sesión. Sus publicaciones se conservan.",
+    confirmar: "Desactivar",
+    peligro: true,
+  },
+  dismiss: {
+    titulo: "¿Descartar este reporte?",
+    detalle: "No se toma ninguna medida contra el estudiante.",
+    confirmar: "Descartar",
+    peligro: false,
+  },
+};
 
 const ESTADOS = [
   ["open", "Pendientes"],
@@ -14,6 +37,8 @@ export default function Moderation() {
   const [reportes, setReportes] = useState(null);
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState("");
+  const [pendiente, setPendiente] = useState(null);   // { id, action }
+  const [aplicando, setAplicando] = useState(false);
 
   function cargar(e = estado) {
     setReportes(null);
@@ -24,15 +49,21 @@ export default function Moderation() {
 
   useEffect(() => { cargar(estado); }, [estado]);
 
-  async function resolver(id, action) {
-    const textos = {
-      delete_post: "¿Eliminar esta publicación?",
-      disable_user: "¿Desactivar esta cuenta? No podrá iniciar sesión.",
-      dismiss: "¿Descartar este reporte?",
-    };
-    if (!confirm(textos[action])) return;
-    await api(`/moderation/reports/${id}/resolve/`, { body: { action } });
-    cargar();
+  async function aplicar() {
+    setAplicando(true);
+    setError("");
+    try {
+      await api(`/moderation/reports/${pendiente.id}/resolve/`, {
+        body: { action: pendiente.action },
+      });
+      setPendiente(null);
+      cargar();
+    } catch (err) {
+      setError(err.message);
+      setPendiente(null);
+    } finally {
+      setAplicando(false);
+    }
   }
 
   return (
@@ -66,6 +97,15 @@ export default function Moderation() {
         </div>
       )}
 
+      {pendiente && (
+        <ConfirmDialog
+          {...ACCIONES[pendiente.action]}
+          ocupado={aplicando}
+          onConfirm={aplicar}
+          onCancel={() => setPendiente(null)}
+        />
+      )}
+
       {error && <p className="error pad">{error}</p>}
       {reportes === null && <Skeleton rows={3} />}
       {reportes?.length === 0 && (
@@ -91,15 +131,15 @@ export default function Moderation() {
           {estado === "open" && (
             <div className="report-actions">
               {r.post && (
-                <button className="btn-outline btn-sm" onClick={() => resolver(r.id, "delete_post")}>
+                <button className="btn-outline btn-sm" onClick={() => setPendiente({ id: r.id, action: "delete_post" })}>
                   Eliminar publicación
                 </button>
               )}
               <button className="btn-outline btn-sm danger-outline"
-                onClick={() => resolver(r.id, "disable_user")}>
+                onClick={() => setPendiente({ id: r.id, action: "disable_user" })}>
                 Desactivar cuenta
               </button>
-              <button className="btn-outline btn-sm" onClick={() => resolver(r.id, "dismiss")}>
+              <button className="btn-outline btn-sm" onClick={() => setPendiente({ id: r.id, action: "dismiss" })}>
                 Descartar
               </button>
             </div>

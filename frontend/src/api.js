@@ -38,3 +38,20 @@ export async function api(path, { method, body } = {}) {
   }
   return data;
 }
+
+// Subida de imagen: multipart, NO JSON. No ponemos Content-Type a mano:
+// el navegador lo genera con el boundary correcto.
+export async function uploadImage(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+
+  const res = await fetch(BASE + "/uploads/image/", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: fd,
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.detail ?? "No se pudo subir la imagen.");
+  return data.url;
+}

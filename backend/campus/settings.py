@@ -5,14 +5,8 @@ Django settings for the CAMPUS project.
 from datetime import timedelta
 from pathlib import Path
 
-import pymysql
 from dotenv import load_dotenv
 import os
-
-# PyMySQL pretends to be MySQLdb, which is what Django's mysql backend expects.
-# This avoids needing the mysqlclient C extension (and its build headers) on
-# every machine that runs this project.
-pymysql.install_as_MySQLdb()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -44,6 +38,8 @@ INSTALLED_APPS = [
     "posts",
     "notifications",
     "moderation",
+    "uploads",
+    "communities",
 ]
 
 MIDDLEWARE = [
@@ -89,8 +85,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("DB_NAME", "campus"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "sa123"),
+        "USER": os.getenv("DB_USER", "campus_user"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "5432"),
     }
@@ -116,6 +112,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    # Solo afecta a las vistas de lista de DRF (el feed). Las vistas
+    # escritas con @api_view devuelven su lista completa como antes.
+    "DEFAULT_PAGINATION_CLASS": "posts.pagination.CampusPagination",
+    "PAGE_SIZE": 15,
 }
 
 SIMPLE_JWT = {
@@ -141,6 +141,12 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+
+# Archivos subidos por los usuarios. En local se guardan en backend/media/.
+# Al desplegar se cambia por almacenamiento de objetos (Cloudflare R2/S3)
+# sin tocar nada del codigo que sube imagenes.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

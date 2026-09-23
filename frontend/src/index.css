@@ -176,7 +176,7 @@ input, textarea, select { font: inherit; color: inherit; }
 /* ── Comments ──────────────────────────────────────────────── */
 .comments { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
 .comment { display: flex; gap: 10px; padding: 7px 0; }
-.comment-body { min-width: 0; }
+.comment-body { min-width: 0; flex: 1; }
 .comment-author { font-weight: 600; font-size: .88rem; }
 .comment-text { font-size: .92rem; margin: 0; overflow-wrap: anywhere; }
 .comment-form { display: flex; gap: 8px; margin-top: 10px; }
@@ -200,7 +200,7 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .identity-sem { color: var(--violet); font-weight: 700; }
 .identity-bio { margin: 12px 0 0; max-width: 52ch; white-space: pre-wrap; }
-.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; padding: 0; list-style: none; }
 .tag {
   border: 1px solid var(--line); border-radius: var(--r-sm);
   padding: 3px 9px; font-size: .82rem; color: var(--mist);
@@ -259,7 +259,15 @@ input, textarea, select { font: inherit; color: inherit; }
   background: var(--slate); border: 1px solid var(--line); border-radius: var(--r-md);
   padding: 10px 13px; outline: none;
 }
-.field input:focus { border-color: var(--violet); }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--violet); }
+.field textarea, .field select {
+  background: var(--slate); border: 1px solid var(--line); border-radius: var(--r-md);
+  padding: 10px 13px; outline: none; resize: vertical;
+}
+.field select { appearance: none; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--mist) 50%), linear-gradient(135deg, var(--mist) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+  background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
 .auth-alt { color: var(--mist); font-size: .9rem; margin-top: 20px; }
 .auth-alt a { color: var(--violet); font-weight: 600; }
 .auth-note { background: var(--slate); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; }
@@ -298,7 +306,7 @@ input, textarea, select { font: inherit; color: inherit; }
   .identity-name { font-size: 1.6rem; }
 
   .tabbar {
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(5, 1fr);
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 8;
     background: var(--obsidian); border-top: 1px solid var(--line);
     padding-bottom: env(safe-area-inset-bottom);
@@ -395,4 +403,150 @@ input, textarea, select { font: inherit; color: inherit; }
   .summary { grid-template-columns: repeat(2, 1fr); }
   .summary-item:nth-child(3), .summary-item:nth-child(4) { border-top: 1px solid var(--line); }
   .summary-item:nth-child(3) { border-left: 0; }
+}
+
+/* ── Imágenes ──────────────────────────────────────────────── */
+.preview { position: relative; margin-top: 10px; }
+.preview img {
+  width: 100%; max-height: 380px; object-fit: cover;
+  border-radius: var(--r-md); border: 1px solid var(--line); display: block;
+}
+.preview-x {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(7, 9, 14, .78); border: 1px solid var(--line);
+  border-radius: 50%; width: 30px; height: 30px;
+  display: grid; place-items: center; color: var(--snow);
+}
+.preview-x:hover { background: var(--coral); border-color: var(--coral); color: #2a0a0a; }
+
+.avatar-edit { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+.post-img { cursor: zoom-in; }
+
+/* Visor de imagen a pantalla completa */
+.lightbox {
+  position: fixed; inset: 0; z-index: 30;
+  background: rgba(7, 9, 14, .92);
+  display: grid; place-items: center; padding: 24px;
+  cursor: zoom-out;
+}
+.lightbox img { max-width: 100%; max-height: 100%; border-radius: var(--r-md); }
+
+/* ── Paginación ────────────────────────────────────────────── */
+.load-more { padding: 20px 22px 28px; display: flex; justify-content: center; }
+
+/* ── Confirmación ──────────────────────────────────────────── */
+/* Reemplaza el confirm() gris del navegador. */
+.dialog-sm { max-width: 340px; }
+.btn-danger { background: var(--coral); color: #2a0a0a; }
+
+/* ── Borrar comentario ─────────────────────────────────────── */
+/* Aparece al pasar el cursor por el comentario; en pantallas
+   táctiles (sin hover) se queda visible, porque ahí no hay hover. */
+.comment-x {
+  background: none; border: 0; padding: 2px; align-self: flex-start;
+  color: var(--mist); opacity: 0; transition: opacity .15s, color .15s;
+  flex-shrink: 0;
+}
+.comment:hover .comment-x, .comment-x:focus-visible { opacity: 1; }
+.comment-x:hover { color: var(--coral); }
+@media (hover: none) { .comment-x { opacity: 1; } }
+
+@media (max-width: 900px) {
+  .load-more { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ── Perfil en móvil: los botones van en su propia fila ────── */
+.identity-actions { display: flex; gap: 8px; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .identity-top { flex-wrap: wrap; }
+  .identity-actions { width: 100%; order: 3; }
+  .identity-actions > * { flex: 1; }
+}
+
+/* ── Comunidades ───────────────────────────────────────────── */
+/* Las comunidades son cuadros de esquinas suaves; las personas, círculos. */
+.cmark {
+  display: grid; place-items: center; flex-shrink: 0;
+  background: var(--violet-soft); color: var(--violet);
+  border: 1px solid rgba(124, 58, 237, .32);
+  font-family: var(--display); font-weight: 700; line-height: 1;
+}
+
+.page-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.btn-icon { display: inline-flex; align-items: center; gap: 6px; }
+
+.community-row {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding: 15px 22px; border-bottom: 1px solid var(--line);
+}
+.community-row > .btn-outline, .community-row > .role-tag { margin-top: 4px; flex-shrink: 0; }
+.community-desc {
+  margin: 5px 0 0; font-size: .9rem; color: var(--snow); opacity: .86;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.inline-lock { color: var(--mist); margin-left: 6px; vertical-align: -1px; }
+.pending-pill {
+  margin-left: 8px; padding: 1px 7px; border-radius: 10px;
+  background: rgba(255, 107, 107, .14); color: var(--coral); font-size: .76rem; font-weight: 600;
+}
+
+.role-tag {
+  display: inline-block; border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 3px 9px; font-size: .78rem; font-weight: 600; color: var(--mist); white-space: nowrap;
+}
+.role-tag.owner { color: var(--violet); border-color: rgba(124, 58, 237, .45); background: var(--violet-soft); }
+.role-tag.moderator { color: var(--snow); border-color: rgba(124, 58, 237, .35); }
+.role-tag.pending { color: var(--coral); border-color: rgba(255, 107, 107, .35); }
+.stats .role-tag { align-self: center; }
+
+.row-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.privacy-label { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Pestañas bajo la cabecera de la comunidad (no fijas, a diferencia de .page-head) */
+.subtabs { display: flex; gap: 22px; padding: 14px 22px 0; border-bottom: 1px solid var(--line); }
+.subtabs .tab { margin-bottom: -1px; padding-bottom: 12px; display: inline-flex; align-items: center; gap: 7px; }
+.tab-count {
+  background: var(--coral); color: #2a0a0a; font-size: .68rem; font-weight: 700;
+  min-width: 17px; height: 17px; padding: 0 5px; border-radius: 9px;
+  display: inline-grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+
+.post-community {
+  display: inline-block; margin-top: 2px; font-size: .8rem; color: var(--mist);
+}
+.post-community strong { color: var(--violet); font-weight: 600; }
+.post-community:hover strong { text-decoration: underline; }
+
+.locked { padding: 52px 22px; text-align: center; }
+.locked .muted { max-width: 36ch; margin: 0 auto; }
+.locked-icon {
+  display: inline-grid; place-items: center; width: 48px; height: 48px; margin-bottom: 12px;
+  border-radius: 12px; background: var(--slate); border: 1px solid var(--line); color: var(--mist);
+}
+
+.rail-more { display: inline-block; margin-top: 8px; font-size: .85rem; color: var(--violet); font-weight: 600; }
+.rail-more:hover { text-decoration: underline; }
+
+/* Formulario de comunidad */
+.privacy { border: 0; padding: 0; margin: 0 0 15px; min-width: 0; }
+.privacy > span { margin-bottom: 2px; }
+.privacy-opt {
+  display: flex; align-items: flex-start; gap: 11px; cursor: pointer;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-md);
+  transition: border-color .15s, background .15s;
+}
+.privacy-opt.on { border-color: var(--violet); background: var(--violet-soft); }
+.privacy-opt input { accent-color: var(--violet); margin-top: 4px; }
+.privacy-opt strong { display: block; font-weight: 600; font-size: .92rem; }
+.privacy-opt small { display: block; color: var(--mist); font-size: .84rem; font-weight: 400; }
+.form-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.form-actions .spacer { flex: 1; }
+
+@media (max-width: 900px) {
+  .community-row, .subtabs { padding-left: 16px; padding-right: 16px; }
+  .tabitem { font-size: .64rem; }
+}
+@media (max-width: 600px) {
+  .person .row-actions { max-width: 50%; }
 }

@@ -3,9 +3,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from communities.access import can_view
 from posts.models import Post
 from users.models import User
 
+from .cleanup import detach_reports
 from .models import Report
 from .permissions import IsModerator
 from .serializers import ReportCreateSerializer, ReportSerializer
@@ -28,7 +30,10 @@ def _crear(request, **objetivo):
 
 @api_view(["POST"])
 def report_post(request, pk):
-    post = Post.objects.filter(pk=pk, school=request.user.school).first()
+    post = Post.objects.filter(pk=pk, school=request.user.school).select_related("community").first()
+    # Una publicación de una comunidad privada no existe para quien no la puede ver.
+    if post and post.community and not can_view(request.user, post.community):
+        post = None
     if not post:
         return Response({"detail": "No encontrado."}, status=status.HTTP_404_NOT_FOUND)
     if post.author == request.user:
@@ -80,16 +85,10 @@ def resolve_report(request, pk):
                 {"detail": "Este reporte no es sobre una publicación."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        post, autor = r.post, r.post.author
+        post = r.post
         # Desligamos los reportes ANTES de borrar el post: si no, el borrado
         # en cascada se llevaría también el historial de moderación.
-        Report.objects.filter(post=post).update(
-            post=None,
-            reported_user=autor,
-            status=Report.Status.RESOLVED,
-            reviewed_at=timezone.now(),
-            reviewed_by=request.user,
-        )
+        detach_reports([post], reviewer=request.user)
         post.delete()
         return Response({"detail": "Publicación eliminada.", "status": Report.Status.RESOLVED})
 

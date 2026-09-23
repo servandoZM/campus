@@ -32,3 +32,18 @@ export const Flag = (p) => (
 export const Shield = (p) => (
   <svg {...base} {...p}><path d="M12 3l7 3v5.5c0 4.2-2.9 7.6-7 8.5-4.1-.9-7-4.3-7-8.5V6z" /></svg>
 );
+export const ImageIcon = (p) => (
+  <svg {...base} {...p} width={19} height={19}><rect x="3" y="4.5" width="18" height="15" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="m4 17 5-4.5 3.5 3L16 12l4 3.5" /></svg>
+);
+export const X = (p) => (
+  <svg {...base} {...p} width={16} height={16}><path d="M6 6l12 12M18 6 6 18" /></svg>
+);
+export const Groups = (p) => (
+  <svg {...base} {...p}><circle cx="12" cy="8.5" r="3" /><path d="M6.5 19v-.8A3.7 3.7 0 0 1 10.2 14.5h3.6a3.7 3.7 0 0 1 3.7 3.7v.8" /><circle cx="5.2" cy="10" r="2.1" /><path d="M2.5 17.5v-.4a2.6 2.6 0 0 1 2.6-2.6h.6" /><circle cx="18.8" cy="10" r="2.1" /><path d="M21.5 17.5v-.4a2.6 2.6 0 0 0-2.6-2.6h-.6" /></svg>
+);
+export const Lock = (p) => (
+  <svg {...base} width={14} height={14} {...p}><rect x="5" y="11" width="14" height="9.5" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+);
+export const Plus = (p) => (
+  <svg {...base} width={16} height={16} {...p}><path d="M12 5v14M5 12h14" /></svg>
+);

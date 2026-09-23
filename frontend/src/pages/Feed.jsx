@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
-import { api } from "../api";
+import { useMemo, useState } from "react";
 import Composer from "../components/Composer";
 import Post from "../components/Post";
 import Skeleton from "../components/Skeleton";
+import usePagedPosts from "../usePagedPosts";
 
 export default function Feed() {
   const [vista, setVista] = useState("escuela");
-  const [posts, setPosts] = useState(null);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    setPosts(null);
-    api(vista === "siguiendo" ? "/posts/?feed=1" : "/posts/")
-      .then((d) => setPosts(d ?? []))
-      .catch((e) => { setError(e.message); setPosts([]); });
-  }, [vista]);
+  // useMemo evita crear una cadena nueva en cada render, que haria que el
+  // hook recargara el feed una y otra vez.
+  const ruta = useMemo(
+    () => (vista === "siguiendo" ? "/posts/?feed=1" : "/posts/"),
+    [vista]
+  );
+
+  const { posts, error, hayMas, cargandoMas, cargarMas, agregar, quitar } =
+    usePagedPosts(ruta);
 
   return (
     <>
@@ -34,7 +35,7 @@ export default function Feed() {
         </div>
       </div>
 
-      <Composer onCreated={(p) => setPosts([p, ...(posts ?? [])])} />
+      <Composer onCreated={agregar} />
 
       {error && <p className="error pad">{error}</p>}
       {posts === null && <Skeleton />}
@@ -53,8 +54,16 @@ export default function Feed() {
       )}
 
       {posts?.map((p) => (
-        <Post key={p.id} post={p} onDeleted={(id) => setPosts(posts.filter((x) => x.id !== id))} />
+        <Post key={p.id} post={p} onDeleted={quitar} />
       ))}
+
+      {hayMas && (
+        <div className="load-more">
+          <button className="btn-outline" onClick={cargarMas} disabled={cargandoMas}>
+            {cargandoMas ? "Cargando…" : "Cargar más"}
+          </button>
+        </div>
+      )}
     </>
   );
 }

@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../AuthContext";
 import Avatar from "./Avatar";
-import { Bell, Compass, Home, Shield, User, Users } from "./icons";
+import { Bell, Compass, Groups, Home, Shield, User, Users } from "./icons";
 import Rail from "./Rail";
 
 const NAV = [
   { to: "/", label: "Inicio", Icon: Home, end: true },
   { to: "/explorar", label: "Explorar", Icon: Compass },
+  { to: "/comunidades", label: "Comunidades", Icon: Groups, match: ["/comunidades", "/c/"] },
   { to: "/actividad", label: "Actividad", Icon: Bell, badge: true },
   { to: "/conexiones", label: "Conexiones", Icon: Users },
   { to: "/perfil", label: "Perfil", Icon: User },
 ];
 
-// El tabbar de móvil deja fuera "Conexiones": 4 destinos caben cómodos, 5 no.
+// El tabbar de móvil deja fuera "Conexiones" (se llega desde el perfil):
+// 5 destinos es el máximo que cabe cómodo con el pulgar.
 const NAV_MOVIL = NAV.filter((n) => n.to !== "/conexiones");
 const MOD = { to: "/moderacion", label: "Moderación", Icon: Shield };
 
@@ -26,8 +28,15 @@ export default function Layout({ children }) {
     return () => clearInterval(t);
   }, []);
 
-  const item = ({ to, label, Icon, end, badge }, clase) => (
-    <NavLink key={to} to={to} end={end} className={clase}>
+  const { pathname } = useLocation();
+
+  // /c/robotica también es "Comunidades": NavLink solo marcaría /comunidades.
+  const item = ({ to, label, Icon, end, badge, match }, clase) => (
+    <NavLink
+      key={to} to={to} end={end}
+      className={({ isActive }) =>
+        `${clase} ${isActive || match?.some((m) => pathname.startsWith(m)) ? "active" : ""}`}
+    >
       <span className="navicon">
         <Icon />
         {badge && unread > 0 && (

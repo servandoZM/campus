@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import Layout from "./components/Layout";
+import Communities from "./pages/Communities";
+import Community from "./pages/Community";
+import CommunityNew from "./pages/CommunityNew";
 import Connections from "./pages/Connections";
 import Explore from "./pages/Explore";
 import Feed from "./pages/Feed";
@@ -29,6 +32,9 @@ export default function App() {
       <Route path="/registro" element={user ? <Navigate to="/" replace /> : <Register />} />
       <Route path="/" element={<Privado><Feed /></Privado>} />
       <Route path="/explorar" element={<Privado><Explore /></Privado>} />
+      <Route path="/comunidades" element={<Privado><Communities /></Privado>} />
+      <Route path="/comunidades/nueva" element={<Privado><CommunityNew /></Privado>} />
+      <Route path="/c/:slug" element={<Privado><Community /></Privado>} />
       <Route path="/actividad" element={<Privado><NotificacionesRuta /></Privado>} />
       <Route path="/moderacion" element={<Privado><Moderation /></Privado>} />
       <Route path="/conexiones" element={<Privado><Connections /></Privado>} />
